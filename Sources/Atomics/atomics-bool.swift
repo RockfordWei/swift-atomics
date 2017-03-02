@@ -10,71 +10,90 @@ import ClangAtomics
 
 public struct AtomicBool
 {
-  @_versioned internal var val = Atomic32()
+  @_versioned internal let p: UnsafeMutablePointer<Atomic32>
   public init(_ value: Bool = false)
   {
-    Init32(value ? 1 : 0, &val)
+    let pointer = UnsafeMutablePointer<Atomic32>.allocate(capacity: 1)
+    Init32(value ? 1 : 0, pointer)
+    p = pointer
   }
 
   public var value: Bool {
     @inline(__always)
-    mutating get { return Read32(&val, memory_order_relaxed) != 0 }
+    get { return Read32(p, memory_order_relaxed) != 0 }
+  }
+
+  public func destroy()
+  {
+    p.deallocate(capacity: 1)
   }
 }
 
 extension AtomicBool
 {
   @inline(__always)
-  public mutating func load(order: LoadMemoryOrder = .relaxed)-> Bool
+  public func load(order: LoadMemoryOrder = .relaxed)-> Bool
   {
-    return Read32(&val, order.order) != 0
+    return Read32(p, order.order) != 0
   }
 
   @inline(__always)
-  public mutating func store(_ value: Bool, order: StoreMemoryOrder = .relaxed)
+  public func store(_ value: Bool, order: StoreMemoryOrder = .relaxed)
   {
-    Store32(value ? 1 : 0, &val, order.order)
+    Store32(value ? 1 : 0, p, order.order)
   }
 
   @inline(__always) @discardableResult
-  public mutating func swap(_ value: Bool, order: MemoryOrder = .relaxed)-> Bool
+  public func swap(_ value: Bool, order: MemoryOrder = .relaxed)-> Bool
   {
-    return Swap32(value ? 1 : 0, &val, order.order) != 0
+    return Swap32(value ? 1 : 0, p, order.order) != 0
   }
 
   @inline(__always) @discardableResult
-  public mutating func or(_ value: Bool, order: MemoryOrder = .relaxed)-> Bool
+  public func or(_ value: Bool, order: MemoryOrder = .relaxed)-> Bool
   {
-    return Or32(value ? 1 : 0, &val, order.order) != 0
+    return Or32(value ? 1 : 0, p, order.order) != 0
   }
 
   @inline(__always) @discardableResult
-  public mutating func xor(_ value: Bool, order: MemoryOrder = .relaxed)-> Bool
+  public func xor(_ value: Bool, order: MemoryOrder = .relaxed)-> Bool
   {
-    return Xor32(value ? 1 : 0, &val, order.order) != 0
+    return Xor32(value ? 1 : 0, p, order.order) != 0
   }
 
   @inline(__always) @discardableResult
-  public mutating func and(_ value: Bool, order: MemoryOrder = .relaxed)-> Bool
+  public func and(_ value: Bool, order: MemoryOrder = .relaxed)-> Bool
   {
-    return And32(value ? 1 : 0, &val, order.order) != 0
+    return And32(value ? 1 : 0, p, order.order) != 0
   }
 
   @inline(__always) @discardableResult
-  public mutating func CAS(current: Bool, future: Bool,
-                           type: CASType = .weak,
-                           orderSwap: MemoryOrder = .relaxed,
-                           orderLoad: LoadMemoryOrder = .relaxed) -> Bool
+  public func loadCAS(current: inout Bool, future: Bool,
+                      type: CASType = .weak,
+                      orderSwap: MemoryOrder = .relaxed,
+                      orderLoad: LoadMemoryOrder = .relaxed) -> Bool
   {
     assert(orderLoad.rawValue <= orderSwap.rawValue)
     assert(orderSwap == .release ? orderLoad == .relaxed : true)
     var expect: Int32 = current ? 1 : 0
     let future: Int32 = future  ? 1 : 0
+    let success: Bool
     switch type {
     case .strong:
-      return CAS32(&expect, future, &val, orderSwap.order, orderLoad.order)
+      success = CAS32(&expect, future, p, orderSwap.order, orderLoad.order)
     case .weak:
-      return WeakCAS32(&expect, future, &val, orderSwap.order, orderLoad.order)
+      success = WeakCAS32(&expect, future, p, orderSwap.order, orderLoad.order)
     }
+    current = expect != 0
+    return success
+  }
+
+  @inline(__always) @discardableResult
+  public func CAS(current: Bool, future: Bool,
+                  type: CASType = .weak,
+                  order: MemoryOrder = .relaxed) -> Bool
+  {
+    var expect = current
+    return loadCAS(current: &expect, future: future, type: type, orderSwap: order, orderLoad: .relaxed)
   }
 }
