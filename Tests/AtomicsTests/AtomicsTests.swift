@@ -52,7 +52,7 @@ class AtomicsTests: XCTestCase
 
   func testInt()
   {
-    var i = AtomicInt()
+    let i = AtomicInt()
     XCTAssert(i.value == 0)
 
     let r1 = Int(nzRandom())
@@ -107,11 +107,13 @@ class AtomicsTests: XCTestCase
     while(!i.loadCAS(current: &j, future: r3)) {}
     XCTAssertEqual(r1, j)
     XCTAssertEqual(r3, i.load())
+
+    i.destroy()
   }
 
   func testUInt()
   {
-    var i = AtomicUInt()
+    let i = AtomicUInt()
     XCTAssert(i.value == 0)
 
     let r1 = UInt(nzRandom())
@@ -166,11 +168,13 @@ class AtomicsTests: XCTestCase
     while(!i.loadCAS(current: &j, future: r3)) {}
     XCTAssertEqual(r1, j)
     XCTAssertEqual(r3, i.load())
+
+    i.destroy()
   }
 
   func testInt32()
   {
-    var i = AtomicInt32()
+    let i = AtomicInt32()
     XCTAssert(i.value == 0)
 
     let r1 = Int32(nzRandom())
@@ -225,11 +229,13 @@ class AtomicsTests: XCTestCase
     while(!i.loadCAS(current: &j, future: r3)) {}
     XCTAssertEqual(r1, j)
     XCTAssertEqual(r3, i.load())
+
+    i.destroy()
   }
 
   func testUInt32()
   {
-    var i = AtomicUInt32()
+    let i = AtomicUInt32()
     XCTAssert(i.value == 0)
 
     let r1 = UInt32(nzRandom())
@@ -284,11 +290,13 @@ class AtomicsTests: XCTestCase
     while(!i.loadCAS(current: &j, future: r3)) {}
     XCTAssertEqual(r1, j)
     XCTAssertEqual(r3, i.load())
+
+    i.destroy()
   }
 
   func testInt64()
   {
-    var i = AtomicInt64()
+    let i = AtomicInt64()
     XCTAssert(i.value == 0)
 
     let r1 = Int64(nzRandom())
@@ -343,11 +351,13 @@ class AtomicsTests: XCTestCase
     while(!i.loadCAS(current: &j, future: r3)) {}
     XCTAssertEqual(r1, j)
     XCTAssertEqual(r3, i.load())
+
+    i.destroy()
   }
 
   func testUInt64()
   {
-    var i = AtomicUInt64()
+    let i = AtomicUInt64()
     XCTAssert(i.value == 0)
 
     let r1 = UInt64(nzRandom())
@@ -402,11 +412,13 @@ class AtomicsTests: XCTestCase
     while(!i.loadCAS(current: &j, future: r3)) {}
     XCTAssertEqual(r1, j)
     XCTAssertEqual(r3, i.load())
+
+    i.destroy()
   }
 
   func testBool()
   {
-    var boolean = AtomicBool(false)
+    let boolean = AtomicBool(false)
     _ = AtomicBool(true)
     XCTAssert(boolean.value == false)
 
@@ -448,6 +460,8 @@ class AtomicsTests: XCTestCase
       boolean.CAS(current: true, future: false, type: .weak)
       boolean.CAS(current: false, future: true, type: .weak)
     }
+
+    boolean.destroy()
   }
 
   func testFence()
@@ -457,7 +471,7 @@ class AtomicsTests: XCTestCase
   
   func testRawPointer()
   {
-    var i = AtomicRawPointer()
+    let i = AtomicRawPointer()
     XCTAssert(i.pointer == nil)
 
     let r1 = UnsafeRawPointer(bitPattern: nzRandom())
@@ -480,11 +494,13 @@ class AtomicsTests: XCTestCase
     while(!i.loadCAS(current: &j, future: r3)) {}
     XCTAssertEqual(r1, j)
     XCTAssertEqual(r3, i.load())
+
+    i.destroy()
   }
 
   func testMutableRawPointer()
   {
-    var i = AtomicMutableRawPointer()
+    let i = AtomicMutableRawPointer()
     XCTAssert(i.pointer == nil)
 
     let r1 = UnsafeMutableRawPointer(bitPattern: nzRandom())
@@ -514,11 +530,13 @@ class AtomicsTests: XCTestCase
     let value = i.pointer?.assumingMemoryBound(to: UInt.self).pointee
     XCTAssert(rando == value)
     r3.deallocate(bytes: 8, alignedTo: 8)
+
+    i.destroy()
   }
 
   func testUnsafePointer()
   {
-    var i = AtomicPointer<Int8>()
+    let i = AtomicPointer<Int8>()
     XCTAssert(i.pointer == nil)
 
     let r1 = UnsafePointer<Int8>(bitPattern: nzRandom())
@@ -541,11 +559,13 @@ class AtomicsTests: XCTestCase
     while(!i.loadCAS(current: &j, future: r3)) {}
     XCTAssertEqual(r1, j)
     XCTAssertEqual(r3, i.load())
+
+    i.destroy()
   }
 
   func testUnsafeMutablePointer()
   {
-    var i = AtomicMutablePointer<Int>()
+    let i = AtomicMutablePointer<Int>()
     XCTAssert(i.pointer == nil)
 
     let r1 = UnsafeMutablePointer<Int>(bitPattern: nzRandom())
@@ -574,11 +594,13 @@ class AtomicsTests: XCTestCase
     let value = i.pointer?.pointee
     XCTAssert(rando == value)
     r3.deallocate(capacity: 1)
+
+    i.destroy()
   }
-  
+
   func testOpaquePointer()
   {
-    var i = AtomicOpaquePointer()
+    let i = AtomicOpaquePointer()
     XCTAssert(i.pointer == nil)
 
     let r1 = OpaquePointer(bitPattern: nzRandom())
@@ -601,6 +623,8 @@ class AtomicsTests: XCTestCase
     while(!i.loadCAS(current: &j, future: r3)) {}
     XCTAssertEqual(r1, j)
     XCTAssertEqual(r3, i.load())
+
+    i.destroy()
   }
 
   private struct TestStruct
@@ -618,18 +642,19 @@ class AtomicsTests: XCTestCase
 
   func testExample()
   {
-    var value = AtomicInt(0)
+    let value = AtomicInt(0)
 
     print(value.swap(1))
     print(value.value)
     value.store(2)
     print(value.value)
     print("")
+    value.destroy()
 
-    var p = AtomicMutablePointer(UnsafeMutablePointer<Int>.allocate(capacity: 1))
+    let p = AtomicMutablePointer(UnsafeMutablePointer<Int>.allocate(capacity: 1))
     print(p.pointer!)
 
-    var q = AtomicMutablePointer(p.load())
+    let q = AtomicMutablePointer(p.load())
     let r = q.swap(UnsafeMutablePointer<Int>.allocate(capacity: 1))
     p.store(q.pointer)
 
@@ -637,12 +662,14 @@ class AtomicsTests: XCTestCase
     print(r!)
     print(p.pointer!)
     print("")
+    p.destroy()
+    q.destroy()
 
-    var pp = AtomicPointer<Int>(UnsafeMutablePointer<Int>.allocate(capacity: 1))
+    let pp = AtomicPointer<Int>(UnsafeMutablePointer<Int>.allocate(capacity: 1))
 
     print(pp.pointer!)
 
-    var qq = AtomicPointer(pp.load())
+    let qq = AtomicPointer(pp.load())
     let rr = qq.swap(UnsafePointer(UnsafeMutablePointer<Int>.allocate(capacity: 1)))
     pp.store(qq.pointer)
 
@@ -650,11 +677,13 @@ class AtomicsTests: XCTestCase
     print(rr!)
     print(pp.pointer!)
     print("")
+    pp.destroy()
+    qq.destroy()
 
-    var i = AtomicInt32(Int32(nzRandom()))
+    let i = AtomicInt32(Int32(nzRandom()))
     print(i.value)
 
-    var j = AtomicInt32(i.load())
+    let j = AtomicInt32(i.load())
     let k = j.swap(Int32(nzRandom()), order: .acqrel)
     i.store(j.value)
 
@@ -662,11 +691,13 @@ class AtomicsTests: XCTestCase
     print(k)
     print(i.value)
     print("")
+    i.destroy()
+    j.destroy()
 
-    var ii = AtomicInt64(Int64(nzRandom()))
+    let ii = AtomicInt64(Int64(nzRandom()))
     print(ii.value)
 
-    var jj = AtomicInt64(ii.load())
+    let jj = AtomicInt64(ii.load())
     let kk = jj.swap(numericCast(nzRandom()))
     ii.store(jj.value)
 
@@ -674,6 +705,8 @@ class AtomicsTests: XCTestCase
     print(kk)
     print(ii.value)
     print("")
+    ii.destroy()
+    jj.destroy()
 
     var start = Date()
     var dt = Date().timeIntervalSince(start)
@@ -761,51 +794,56 @@ class AtomicsPerformanceTests: XCTestCase
   func testPerformanceStore()
   {
     let c = testLoopCount
-    var m = AtomicInt(0)
+    let m = AtomicInt(0)
     measure {
       m.store(0)
       for i in 0..<c { m.store(i, order: .relaxed) }
     }
+    m.destroy()
   }
 
   func testPerformanceSynchronizedStore()
   {
     let c = testLoopCount
-    var m = AtomicInt(0)
+    let m = AtomicInt(0)
     measure {
       m.store(0)
       for i in 0..<c { m.store(i, order: .sequential) }
     }
+    m.destroy()
   }
 
   func testPerformanceRead()
   {
     let c = testLoopCount
-    var m = AtomicInt(0)
+    let m = AtomicInt(0)
     measure {
       m.store(0)
       for _ in 0..<c { _ = m.load(order: .relaxed) }
     }
+    m.destroy()
   }
 
   func testPerformanceSynchronizedRead()
   {
     let c = testLoopCount
-    var m = AtomicInt(0)
+    let m = AtomicInt(0)
     measure {
       m.store(0)
       for _ in 0..<c { _ = m.load(order: .sequential) }
     }
+    m.destroy()
   }
 
   func testPerformanceSwiftCASSuccess()
   {
     let c = Int32(testLoopCount)
-    var m = AtomicInt32(0)
+    let m = AtomicInt32(0)
     measure {
       m.store(0)
       for i in (m.value)..<c { m.CAS(current: i, future: i&+1) }
     }
+    m.destroy()
   }
 
 #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
@@ -823,11 +861,12 @@ class AtomicsPerformanceTests: XCTestCase
   func testPerformanceSwiftCASFailure()
   {
     let c = Int32(testLoopCount)
-    var m = AtomicInt32(0)
+    let m = AtomicInt32(0)
     measure {
       m.store(0)
       for i in (m.value)..<c { m.CAS(current: i, future: 0) }
     }
+    m.destroy()
   }
 
 #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
