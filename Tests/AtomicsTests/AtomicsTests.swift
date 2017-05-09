@@ -468,7 +468,7 @@ class AtomicsTests: XCTestCase
   {
     ThreadFence()
   }
-  
+
   func testRawPointer()
   {
     let i = AtomicRawPointer()
@@ -773,7 +773,7 @@ class AtomicsTests: XCTestCase
     pt.pointee.print()
     g.wait()
     pt.pointee.print()
-    
+
     pt.deallocate(capacity: 1)
   }
 }
