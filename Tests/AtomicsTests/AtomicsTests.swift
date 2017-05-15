@@ -466,7 +466,8 @@ class AtomicsTests: XCTestCase
 
   func testFence()
   {
-    ThreadFence()
+    threadFence()
+    threadFence(order: .sequential)
   }
 
   func testRawPointer()
@@ -634,7 +635,7 @@ class AtomicsTests: XCTestCase
     var c = AtomicInt(2)
     var d = AtomicInt(3)
 
-    mutating func print()
+    func print()
     {
       Swift.print("\(a.value) \(b.value) \(c.value) \(d.value)")
     }
@@ -737,7 +738,7 @@ class AtomicsTests: XCTestCase
     print(Int(1e9*dt/Double(iterations)))
     print("")
 
-    var t = TestStruct()
+    let t = TestStruct()
     t.print()
 
     t.c.store(4)
