@@ -19,7 +19,7 @@ public struct AtomicUInt
 
   public var value: UInt {
     @inline(__always)
-    get { return UInt(bitPattern: AtomicWordLoad(p, memory_order_relaxed)) }
+    get { return UInt(bitPattern: AtomicWordLoad(p, .relaxed)) }
   }
 
   public func destroy()
@@ -33,61 +33,61 @@ extension AtomicUInt
   @inline(__always)
   public func load(order: LoadMemoryOrder = .relaxed) -> UInt
   {
-    return UInt(bitPattern: AtomicWordLoad(p, order.order))
+    return UInt(bitPattern: AtomicWordLoad(p, order))
   }
 
   @inline(__always)
   public func store(_ value: UInt, order: StoreMemoryOrder = .relaxed)
   {
-    AtomicWordStore(Int(bitPattern: value), p, order.order)
+    AtomicWordStore(Int(bitPattern: value), p, order)
   }
 
   @inline(__always)
   public func swap(_ value: UInt, order: MemoryOrder = .relaxed) -> UInt
   {
-    return UInt(bitPattern: AtomicWordSwap(Int(bitPattern: value), p, order.order))
+    return UInt(bitPattern: AtomicWordSwap(Int(bitPattern: value), p, order))
   }
 
   @inline(__always) @discardableResult
   public func add(_ value: UInt, order: MemoryOrder = .relaxed) -> UInt
   {
-    return UInt(bitPattern: AtomicWordAdd(Int(bitPattern: value), p, order.order))
+    return UInt(bitPattern: AtomicWordAdd(Int(bitPattern: value), p, order))
   }
 
   @inline(__always) @discardableResult
   public func increment(order: MemoryOrder = .relaxed) -> UInt
   {
-    return UInt(bitPattern: AtomicWordAdd(1, p, order.order))
+    return UInt(bitPattern: AtomicWordAdd(1, p, order))
   }
 
   @inline(__always) @discardableResult
   public func subtract(_ value: UInt, order: MemoryOrder = .relaxed) -> UInt
   {
-    return UInt(bitPattern: AtomicWordSub(Int(bitPattern: value), p, order.order))
+    return UInt(bitPattern: AtomicWordSub(Int(bitPattern: value), p, order))
   }
 
   @inline(__always) @discardableResult
   public func decrement(order: MemoryOrder = .relaxed) -> UInt
   {
-    return UInt(bitPattern: AtomicWordSub(1, p, order.order))
+    return UInt(bitPattern: AtomicWordSub(1, p, order))
   }
 
   @inline(__always) @discardableResult
   public func bitwiseOr(_ bits:UInt, order: MemoryOrder = .relaxed) -> UInt
   {
-    return UInt(bitPattern: AtomicWordOr(Int(bitPattern: bits), p, order.order))
+    return UInt(bitPattern: AtomicWordOr(Int(bitPattern: bits), p, order))
   }
 
   @inline(__always) @discardableResult
   public func bitwiseXor(_ bits:UInt, order: MemoryOrder = .relaxed) -> UInt
   {
-    return UInt(bitPattern: AtomicWordXor(Int(bitPattern: bits), p, order.order))
+    return UInt(bitPattern: AtomicWordXor(Int(bitPattern: bits), p, order))
   }
 
   @inline(__always) @discardableResult
   public func bitwiseAnd(_ bits:UInt, order: MemoryOrder = .relaxed) -> UInt
   {
-    return UInt(bitPattern: AtomicWordAnd(Int(bitPattern: bits), p, order.order))
+    return UInt(bitPattern: AtomicWordAnd(Int(bitPattern: bits), p, order))
   }
 
   @inline(__always) @discardableResult
@@ -102,9 +102,9 @@ extension AtomicUInt
       current in
       switch type {
       case .strong:
-        return AtomicWordStrongCAS(current, Int(bitPattern: future), p, orderSwap.order, orderLoad.order)
+        return AtomicWordStrongCAS(current, Int(bitPattern: future), p, orderSwap, orderLoad)
       case .weak:
-        return AtomicWordWeakCAS(current, Int(bitPattern: future), p, orderSwap.order, orderLoad.order)
+        return AtomicWordWeakCAS(current, Int(bitPattern: future), p, orderSwap, orderLoad)
       }
     }
   }

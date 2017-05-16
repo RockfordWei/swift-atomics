@@ -19,7 +19,7 @@ public struct AtomicInt
 
   public var value: Int {
     @inline(__always)
-    get { return AtomicWordLoad(p, memory_order_relaxed) }
+    get { return AtomicWordLoad(p, .relaxed) }
   }
 
   public func destroy()
@@ -33,61 +33,61 @@ extension AtomicInt
   @inline(__always)
   public func load(order: LoadMemoryOrder = .relaxed) -> Int
   {
-    return AtomicWordLoad(p, order.order)
+    return AtomicWordLoad(p, order)
   }
 
   @inline(__always)
   public func store(_ value: Int, order: StoreMemoryOrder = .relaxed)
   {
-    AtomicWordStore(value, p, order.order)
+    AtomicWordStore(value, p, order)
   }
 
   @inline(__always)
   public func swap(_ value: Int, order: MemoryOrder = .relaxed) -> Int
   {
-    return AtomicWordSwap(value, p, order.order)
+    return AtomicWordSwap(value, p, order)
   }
 
   @inline(__always) @discardableResult
   public func add(_ delta: Int, order: MemoryOrder = .relaxed) -> Int
   {
-    return AtomicWordAdd(delta, p, order.order)
+    return AtomicWordAdd(delta, p, order)
   }
 
   @inline(__always) @discardableResult
   public func increment(order: MemoryOrder = .relaxed) -> Int
   {
-    return AtomicWordAdd(1, p, order.order)
+    return AtomicWordAdd(1, p, order)
   }
 
   @inline(__always) @discardableResult
   public func subtract(_ delta: Int, order: MemoryOrder = .relaxed) -> Int
   {
-    return AtomicWordSub(delta, p, order.order)
+    return AtomicWordSub(delta, p, order)
   }
 
   @inline(__always) @discardableResult
   public func decrement(order: MemoryOrder = .relaxed) -> Int
   {
-    return AtomicWordSub(1, p, order.order)
+    return AtomicWordSub(1, p, order)
   }
 
   @inline(__always) @discardableResult
   public func bitwiseOr(_ bits: Int, order: MemoryOrder = .relaxed) -> Int
   {
-    return AtomicWordOr(bits, p, order.order)
+    return AtomicWordOr(bits, p, order)
   }
 
   @inline(__always) @discardableResult
   public func bitwiseXor(_ bits: Int, order: MemoryOrder = .relaxed) -> Int
   {
-    return AtomicWordXor(bits, p, order.order)
+    return AtomicWordXor(bits, p, order)
   }
 
   @inline(__always) @discardableResult
   public func bitwiseAnd(_ bits: Int, order: MemoryOrder = .relaxed) -> Int
   {
-    return AtomicWordAnd(bits, p, order.order)
+    return AtomicWordAnd(bits, p, order)
   }
 
   @inline(__always) @discardableResult
@@ -100,9 +100,9 @@ extension AtomicInt
     assert(orderSwap == .release ? orderLoad == .relaxed : true)
     switch type {
     case .strong:
-      return AtomicWordStrongCAS(current, future, p, orderSwap.order, orderLoad.order)
+      return AtomicWordStrongCAS(current, future, p, orderSwap, orderLoad)
     case .weak:
-      return AtomicWordWeakCAS(current, future, p, orderSwap.order, orderLoad.order)
+      return AtomicWordWeakCAS(current, future, p, orderSwap, orderLoad)
     }
   }
 
