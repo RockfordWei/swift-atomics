@@ -639,7 +639,7 @@ class AtomicsTests: XCTestCase
   func testUnmanaged()
   {
     var i = nzRandom()
-    var a = AtomicReference(Thing(i))
+    let a = AtomicReference(Thing(i))
     do {
       let r1 = a.swap(.none)
       print("Will release \(i)")
@@ -660,6 +660,8 @@ class AtomicsTests: XCTestCase
     print("Will release \(i)")
     XCTAssert(a.take() != nil)
     XCTAssert(a.take() == nil)
+
+    a.destroy()
   }
 
   private struct TestStruct

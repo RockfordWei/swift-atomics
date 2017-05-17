@@ -10,22 +10,31 @@ import ClangAtomics
 
 public struct AtomicReference<T: AnyObject>
 {
-  @_versioned internal var ptr = AtomicVoidPointer()
+  @_versioned internal let p = UnsafeMutablePointer<AtomicVoidPointer>.allocate(capacity: 1)
 
   public init(_ ref: T? = nil)
   {
     let u = Unmanaged.tryRetain(ref)?.toOpaque()
-    AtomicPointerInit(u, &ptr)
+    AtomicPointerInit(u, p)
+  }
+
+  public func destroy()
+  {
+    if let pointer = AtomicPointerLoad(p, .relaxed)
+    {
+      _ = Unmanaged<T>.fromOpaque(pointer).takeRetainedValue()
+    }
+    p.deallocate(capacity: 1)
   }
 }
 
 extension AtomicReference
 {
   @inline(__always)
-  public mutating func swap(_ ref: T?, order: MemoryOrder = .sequential) -> T?
+  public func swap(_ ref: T?, order: MemoryOrder = .sequential) -> T?
   {
     let u = Unmanaged.tryRetain(ref)?.toOpaque()
-    if let pointer = AtomicPointerSwap(u, &ptr, order)
+    if let pointer = AtomicPointerSwap(u, p, order)
     {
       return Unmanaged<T>.fromOpaque(pointer).takeRetainedValue()
     }
@@ -33,11 +42,11 @@ extension AtomicReference
   }
 
   @inline(__always)
-  public mutating func swapIfNil(_ ref: T, order: MemoryOrder = .sequential) -> Bool
+  public func swapIfNil(_ ref: T, order: MemoryOrder = .sequential) -> Bool
   {
     let u = Unmanaged.passUnretained(ref)
     var null: UnsafeRawPointer? = nil
-    if AtomicPointerStrongCAS(&null, u.toOpaque(), &ptr, order, .relaxed)
+    if AtomicPointerStrongCAS(&null, u.toOpaque(), p, order, .relaxed)
     {
       _ = u.retain()
       return true
@@ -46,9 +55,9 @@ extension AtomicReference
   }
 
   @inline(__always)
-  public mutating func take(order: MemoryOrder = .sequential) -> T?
+  public func take(order: MemoryOrder = .sequential) -> T?
   {
-    if let pointer = AtomicPointerSwap(nil, &ptr, order)
+    if let pointer = AtomicPointerSwap(nil, p, order)
     {
       return Unmanaged<T>.fromOpaque(pointer).takeRetainedValue()
     }
