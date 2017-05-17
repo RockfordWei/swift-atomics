@@ -297,7 +297,7 @@ extension AtomicPointer
 public struct AtomicOpaquePointer
 {
   @_versioned internal let p = UnsafeMutablePointer<AtomicVoidPointer>.allocate(capacity: 1)
-  
+
   public init(_ pointer: OpaquePointer? = nil)
   {
     AtomicPointerInit(UnsafeRawPointer(pointer), p)
