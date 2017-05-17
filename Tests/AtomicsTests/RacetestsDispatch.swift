@@ -47,6 +47,7 @@ class AtomicsRaceTests: XCTestCase
 
       q.async(execute: closure)
       q.async(execute: closure)
+      q.async(flags: .barrier) {}
     }
   #else
     print("double-free crash disabled")
