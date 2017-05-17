@@ -10,7 +10,7 @@ import ClangAtomics
 
 public struct AtomicUInt64
 {
-  @_versioned internal var p = UnsafeMutablePointer<Atomic64>.allocate(capacity: 1)
+  @_versioned internal let p = UnsafeMutablePointer<Atomic64>.allocate(capacity: 1)
 
   public init(_ value: UInt64 = 0)
   {
