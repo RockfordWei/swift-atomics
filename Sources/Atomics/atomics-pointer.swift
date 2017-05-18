@@ -58,8 +58,6 @@ extension AtomicMutableRawPointer
                       orderSwap: MemoryOrder = .sequential,
                       orderLoad: LoadMemoryOrder = .sequential) -> Bool
   {
-    assert(orderLoad.rawValue <= orderSwap.rawValue)
-    assert(orderSwap == .release ? orderLoad == .relaxed : true)
     return current.withMemoryRebound(to: Optional<UnsafeRawPointer>.self, capacity: 1) {
       current in
       switch type {
@@ -130,8 +128,6 @@ extension AtomicRawPointer
                       orderSwap: MemoryOrder = .sequential,
                       orderLoad: LoadMemoryOrder = .sequential) -> Bool
   {
-    assert(orderLoad.rawValue <= orderSwap.rawValue)
-    assert(orderSwap == .release ? orderLoad == .relaxed : true)
     switch type {
     case .strong:
       return AtomicPointerStrongCAS(current, future, p, orderSwap, orderLoad)
@@ -199,8 +195,6 @@ extension AtomicMutablePointer
                       orderSwap: MemoryOrder = .sequential,
                       orderLoad: LoadMemoryOrder = .sequential) -> Bool
   {
-    assert(orderLoad.rawValue <= orderSwap.rawValue)
-    assert(orderSwap == .release ? orderLoad == .relaxed : true)
     return current.withMemoryRebound(to: Optional<UnsafeRawPointer>.self, capacity: 1) {
       current in
       switch type {
@@ -271,8 +265,6 @@ extension AtomicPointer
                       orderSwap: MemoryOrder = .sequential,
                       orderLoad: LoadMemoryOrder = .sequential) -> Bool
   {
-    assert(orderLoad.rawValue <= orderSwap.rawValue)
-    assert(orderSwap == .release ? orderLoad == .relaxed : true)
     return current.withMemoryRebound(to: Optional<UnsafeRawPointer>.self, capacity: 1) {
       current in
       switch type {
@@ -343,8 +335,6 @@ extension AtomicOpaquePointer
                       orderSwap: MemoryOrder = .sequential,
                       orderLoad: LoadMemoryOrder = .sequential) -> Bool
   {
-    assert(orderLoad.rawValue <= orderSwap.rawValue)
-    assert(orderSwap == .release ? orderLoad == .relaxed : true)
     return current.withMemoryRebound(to: Optional<UnsafeRawPointer>.self, capacity: 1) {
       current in
       switch type {

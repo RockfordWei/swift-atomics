@@ -31,9 +31,9 @@ func nzRandom() -> UInt
   #endif
 }
 
-class AtomicsTests: XCTestCase
+public class AtomicsTests: XCTestCase
 {
-  static var allTests = [
+  public static var allTests = [
     ("testInt", testInt),
     ("testUInt", testUInt),
     ("testInt32", testInt32),
@@ -51,7 +51,7 @@ class AtomicsTests: XCTestCase
     ("testExample", testExample),
   ]
 
-  func testInt()
+  public func testInt()
   {
     let i = AtomicInt()
     XCTAssert(i.value == 0)
@@ -112,7 +112,7 @@ class AtomicsTests: XCTestCase
     i.destroy()
   }
 
-  func testUInt()
+  public func testUInt()
   {
     let i = AtomicUInt()
     XCTAssert(i.value == 0)
@@ -173,7 +173,7 @@ class AtomicsTests: XCTestCase
     i.destroy()
   }
 
-  func testInt32()
+  public func testInt32()
   {
     let i = AtomicInt32()
     XCTAssert(i.value == 0)
@@ -234,7 +234,7 @@ class AtomicsTests: XCTestCase
     i.destroy()
   }
 
-  func testUInt32()
+  public func testUInt32()
   {
     let i = AtomicUInt32()
     XCTAssert(i.value == 0)
@@ -295,7 +295,7 @@ class AtomicsTests: XCTestCase
     i.destroy()
   }
 
-  func testInt64()
+  public func testInt64()
   {
     let i = AtomicInt64()
     XCTAssert(i.value == 0)
@@ -356,7 +356,7 @@ class AtomicsTests: XCTestCase
     i.destroy()
   }
 
-  func testUInt64()
+  public func testUInt64()
   {
     let i = AtomicUInt64()
     XCTAssert(i.value == 0)
@@ -417,7 +417,7 @@ class AtomicsTests: XCTestCase
     i.destroy()
   }
 
-  func testBool()
+  public func testBool()
   {
     let boolean = AtomicBool(false)
     _ = AtomicBool(true)
@@ -465,13 +465,13 @@ class AtomicsTests: XCTestCase
     boolean.destroy()
   }
 
-  func testFence()
+  public func testFence()
   {
     threadFence()
     threadFence(order: .sequential)
   }
 
-  func testRawPointer()
+  public func testRawPointer()
   {
     let i = AtomicRawPointer()
     XCTAssert(i.pointer == nil)
@@ -500,7 +500,7 @@ class AtomicsTests: XCTestCase
     i.destroy()
   }
 
-  func testMutableRawPointer()
+  public func testMutableRawPointer()
   {
     let i = AtomicMutableRawPointer()
     XCTAssert(i.pointer == nil)
@@ -536,7 +536,7 @@ class AtomicsTests: XCTestCase
     i.destroy()
   }
 
-  func testUnsafePointer()
+  public func testUnsafePointer()
   {
     let i = AtomicPointer<Int8>()
     XCTAssert(i.pointer == nil)
@@ -565,7 +565,7 @@ class AtomicsTests: XCTestCase
     i.destroy()
   }
 
-  func testUnsafeMutablePointer()
+  public func testUnsafeMutablePointer()
   {
     let i = AtomicMutablePointer<Int>()
     XCTAssert(i.pointer == nil)
@@ -600,7 +600,7 @@ class AtomicsTests: XCTestCase
     i.destroy()
   }
 
-  func testOpaquePointer()
+  public func testOpaquePointer()
   {
     let i = AtomicOpaquePointer()
     XCTAssert(i.pointer == nil)
@@ -636,7 +636,7 @@ class AtomicsTests: XCTestCase
     deinit { print("Released     \(id)") }
   }
 
-  func testUnmanaged()
+  public func testUnmanaged()
   {
     var i = nzRandom()
     let a = AtomicReference(Thing(i))
@@ -677,7 +677,7 @@ class AtomicsTests: XCTestCase
     }
   }
 
-  func testExample()
+  public func testExample()
   {
     let value = AtomicInt(0)
 
@@ -815,20 +815,22 @@ class AtomicsTests: XCTestCase
   }
 }
 
-class AtomicsPerformanceTests: XCTestCase
+public class AtomicsPerformanceTests: XCTestCase
 {
-  static var allTests = [
+  public static var allTests = [
     ("testPerformanceRead", testPerformanceRead),
     ("testPerformanceSynchronizedRead", testPerformanceSynchronizedRead),
     ("testPerformanceStore", testPerformanceStore),
     ("testPerformanceSynchronizedStore", testPerformanceSynchronizedStore),
     ("testPerformanceSwiftCASSuccess", testPerformanceSwiftCASSuccess),
     ("testPerformanceSwiftCASFailure", testPerformanceSwiftCASFailure),
+    ("testPerformanceOSAtomicCASSuccess", testPerformanceOSAtomicCASSuccess),
+    ("testPerformanceOSAtomicCASFailure", testPerformanceOSAtomicCASFailure),
   ]
 
   let testLoopCount = 1_000_000
 
-  func testPerformanceStore()
+  public func testPerformanceStore()
   {
     let c = testLoopCount
     let m = AtomicInt(0)
@@ -839,7 +841,7 @@ class AtomicsPerformanceTests: XCTestCase
     m.destroy()
   }
 
-  func testPerformanceSynchronizedStore()
+  public func testPerformanceSynchronizedStore()
   {
     let c = testLoopCount
     let m = AtomicInt(0)
@@ -850,7 +852,7 @@ class AtomicsPerformanceTests: XCTestCase
     m.destroy()
   }
 
-  func testPerformanceRead()
+  public func testPerformanceRead()
   {
     let c = testLoopCount
     let m = AtomicInt(0)
@@ -861,7 +863,7 @@ class AtomicsPerformanceTests: XCTestCase
     m.destroy()
   }
 
-  func testPerformanceSynchronizedRead()
+  public func testPerformanceSynchronizedRead()
   {
     let c = testLoopCount
     let m = AtomicInt(0)
@@ -872,7 +874,7 @@ class AtomicsPerformanceTests: XCTestCase
     m.destroy()
   }
 
-  func testPerformanceSwiftCASSuccess()
+  public func testPerformanceSwiftCASSuccess()
   {
     let c = Int32(testLoopCount)
     let m = AtomicInt32(0)
@@ -883,19 +885,21 @@ class AtomicsPerformanceTests: XCTestCase
     m.destroy()
   }
 
-#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-  func testPerformanceOSAtomicCASSuccess()
+  public func testPerformanceOSAtomicCASSuccess()
   {
-    let c = Int32(testLoopCount)
-    var m = Int32(0)
-    measure {
-      m = 0
-      for i in m..<c { OSAtomicCompareAndSwap32(i, i&+1, &m) }
-    }
+    #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+      let c = Int32(testLoopCount)
+      var m = Int32(0)
+      measure {
+        m = 0
+        for i in m..<c { OSAtomicCompareAndSwap32(i, i&+1, &m) }
+      }
+    #else
+      print("test not supported on Linux")
+    #endif
   }
-#endif
 
-  func testPerformanceSwiftCASFailure()
+  public func testPerformanceSwiftCASFailure()
   {
     let c = Int32(testLoopCount)
     let m = AtomicInt32(0)
@@ -906,15 +910,17 @@ class AtomicsPerformanceTests: XCTestCase
     m.destroy()
   }
 
-#if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
-  func testPerformanceOSAtomicCASFailure()
+  public func testPerformanceOSAtomicCASFailure()
   {
-    let c = Int32(testLoopCount)
-    var m = Int32(0)
-    measure {
-      m = 0
-      for i in m..<c { OSAtomicCompareAndSwap32(i, 0, &m) }
-    }
+    #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+      let c = Int32(testLoopCount)
+      var m = Int32(0)
+      measure {
+        m = 0
+        for i in m..<c { OSAtomicCompareAndSwap32(i, 0, &m) }
+      }
+    #else
+      print("test not supported on Linux")
+    #endif
   }
-#endif
 }

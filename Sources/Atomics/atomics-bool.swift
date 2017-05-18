@@ -72,8 +72,6 @@ extension AtomicBool
                       orderSwap: MemoryOrder = .relaxed,
                       orderLoad: LoadMemoryOrder = .relaxed) -> Bool
   {
-    assert(orderLoad.rawValue <= orderSwap.rawValue)
-    assert(orderSwap == .release ? orderLoad == .relaxed : true)
     switch type {
     case .strong:
       return AtomicBooleanStrongCAS(current, future, p, orderSwap, orderLoad)
