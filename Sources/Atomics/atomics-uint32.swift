@@ -10,16 +10,16 @@ import ClangAtomics
 
 public struct AtomicUInt32
 {
-  @_versioned internal let p = UnsafeMutablePointer<Atomic32>.allocate(capacity: 1)
+  @_versioned internal let p = UnsafeMutablePointer<AtomicU32>.allocate(capacity: 1)
 
   public init(_ value: UInt32 = 0)
   {
-    Atomic32Init(Int32(bitPattern: value), p)
+    AtomicU32Init(value, p)
   }
 
   public var value: UInt32 {
     @inline(__always)
-    get { return UInt32(bitPattern: Atomic32Load(p, .relaxed)) }
+    get { return AtomicU32Load(p, .relaxed) }
   }
 
   public func destroy()
@@ -33,61 +33,61 @@ extension AtomicUInt32
   @inline(__always)
   public func load(order: LoadMemoryOrder = .relaxed) -> UInt32
   {
-    return UInt32(bitPattern: Atomic32Load(p, order))
+    return AtomicU32Load(p, order)
   }
 
   @inline(__always)
   public func store(_ value: UInt32, order: StoreMemoryOrder = .relaxed)
   {
-    Atomic32Store(Int32(bitPattern: value), p, order)
+    AtomicU32Store(value, p, order)
   }
 
   @inline(__always)
   public func swap(_ value: UInt32, order: MemoryOrder = .relaxed) -> UInt32
   {
-    return UInt32(bitPattern: Atomic32Swap(Int32(bitPattern: value), p, order))
+    return AtomicU32Swap(value, p, order)
   }
 
   @inline(__always) @discardableResult
-  public func add(_ value: UInt32, order: MemoryOrder = .relaxed) -> UInt32
+  public func add(_ delta: UInt32, order: MemoryOrder = .relaxed) -> UInt32
   {
-    return UInt32(bitPattern: Atomic32Add(Int32(bitPattern: value), p, order))
+    return AtomicU32Add(delta, p, order)
   }
 
   @inline(__always) @discardableResult
   public func increment(order: MemoryOrder = .relaxed) -> UInt32
   {
-    return UInt32(bitPattern: Atomic32Add(1, p, order))
+    return AtomicU32Add(1, p, order)
   }
 
   @inline(__always) @discardableResult
-  public func subtract(_ value: UInt32, order: MemoryOrder = .relaxed) -> UInt32
+  public func subtract(_ delta: UInt32, order: MemoryOrder = .relaxed) -> UInt32
   {
-    return UInt32(bitPattern: Atomic32Sub(Int32(bitPattern: value), p, order))
+    return AtomicU32Sub(delta, p, order)
   }
 
   @inline(__always) @discardableResult
   public func decrement(order: MemoryOrder = .relaxed) -> UInt32
   {
-    return UInt32(bitPattern: Atomic32Sub(1, p, order))
+    return AtomicU32Sub(1, p, order)
   }
 
   @inline(__always) @discardableResult
-  public func bitwiseOr(_ bits:UInt32, order: MemoryOrder = .relaxed) -> UInt32
+  public func bitwiseOr(_ bits: UInt32, order: MemoryOrder = .relaxed) -> UInt32
   {
-    return UInt32(bitPattern: Atomic32Or(Int32(bitPattern: bits), p, order))
+    return AtomicU32Or(bits, p, order)
   }
 
   @inline(__always) @discardableResult
-  public func bitwiseXor(_ bits:UInt32, order: MemoryOrder = .relaxed) -> UInt32
+  public func bitwiseXor(_ bits: UInt32, order: MemoryOrder = .relaxed) -> UInt32
   {
-    return UInt32(bitPattern: Atomic32Xor(Int32(bitPattern: bits), p, order))
+    return AtomicU32Xor(bits, p, order)
   }
 
   @inline(__always) @discardableResult
-  public func bitwiseAnd(_ bits:UInt32, order: MemoryOrder = .relaxed) -> UInt32
+  public func bitwiseAnd(_ bits: UInt32, order: MemoryOrder = .relaxed) -> UInt32
   {
-    return UInt32(bitPattern: Atomic32And(Int32(bitPattern: bits), p, order))
+    return AtomicU32And(bits, p, order)
   }
 
   @inline(__always) @discardableResult
@@ -96,14 +96,11 @@ extension AtomicUInt32
                       orderSwap: MemoryOrder = .relaxed,
                       orderLoad: LoadMemoryOrder = .relaxed) -> Bool
   {
-    return current.withMemoryRebound(to: Int32.self, capacity: 1) {
-      current in
-      switch type {
-      case .strong:
-        return Atomic32StrongCAS(current, Int32(bitPattern: future), p, orderSwap, orderLoad)
-      case .weak:
-        return Atomic32WeakCAS(current, Int32(bitPattern: future), p, orderSwap, orderLoad)
-      }
+    switch type {
+    case .strong:
+      return AtomicU32StrongCAS(current, future, p, orderSwap, orderLoad)
+    case .weak:
+      return AtomicU32WeakCAS(current, future, p, orderSwap, orderLoad)
     }
   }
 
