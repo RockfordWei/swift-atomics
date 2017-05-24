@@ -13,23 +13,46 @@ import func Darwin.libkern.OSAtomic.OSAtomicCompareAndSwap32
 import func Darwin.C.stdlib.arc4random
 #else // assuming os(Linux)
 import func Glibc.random
-import func Glibc.usleep
 #endif
 
-import struct Foundation.Date
 import Dispatch
 
 import Atomics
 
-func nzRandom() -> UInt
+#if swift(>=4.0)
+extension FixedWidthInteger
 {
-  // Return a nonzero, positive Int less than (or equal to) Int32.max/2.
+  // returns a positive random integer greater than 0 and less-than-or-equal to Self.max/2
+  // the least significant bit is always set.
+  static func nzRandom() -> Self
+  {
+    var t = Self()
+    for _ in 0...((t.bitWidth-1)/32)
+    {
+    #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
+      t = t<<32 &+ Self(extendingOrTruncating: arc4random())
+    #else // probably Linux
+      t = t<<32 &+ Self(extendingOrTruncating: random())
+    #endif
+    }
+    return (t|1) & (Self.max>>1)
+  }
+}
+#else
+extension UInt
+{
+  // returns a positive random integer greater than 0 and less-than-or-equal to UInt32.max/2
+  // the least significant bit is always set.
+  static func nzRandom() -> UInt
+  {
   #if os(macOS) || os(iOS) || os(tvOS) || os(watchOS)
     return UInt(arc4random() & 0x3fff_fffe + 1)
   #else
     return UInt(random() & 0x3fff_fffe + 1)
   #endif
+  }
 }
+#endif
 
 
 public class AtomicsTests: XCTestCase
@@ -60,9 +83,15 @@ public class AtomicsTests: XCTestCase
     let i = AtomicInt()
     XCTAssert(i.value == 0)
 
-    let r1 = Int(nzRandom())
-    let r2 = Int(nzRandom())
-    let r3 = Int(nzRandom())
+  #if swift(>=4.0)
+    let r1 = Int.nzRandom()
+    let r2 = Int.nzRandom()
+    let r3 = Int.nzRandom()
+  #else
+    let r1 = Int(UInt.nzRandom())
+    let r2 = Int(UInt.nzRandom())
+    let r3 = Int(UInt.nzRandom())
+  #endif
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -121,9 +150,15 @@ public class AtomicsTests: XCTestCase
     let i = AtomicUInt()
     XCTAssert(i.value == 0)
 
-    let r1 = UInt(nzRandom())
-    let r2 = UInt(nzRandom())
-    let r3 = UInt(nzRandom())
+  #if swift(>=4.0)
+    let r1 = UInt.nzRandom()
+    let r2 = UInt.nzRandom()
+    let r3 = UInt.nzRandom()
+  #else
+    let r1 = UInt(UInt.nzRandom())
+    let r2 = UInt(UInt.nzRandom())
+    let r3 = UInt(UInt.nzRandom())
+  #endif
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -182,9 +217,15 @@ public class AtomicsTests: XCTestCase
     let i = AtomicInt8()
     XCTAssert(i.value == 0)
 
-    let r1 = Int8(truncatingBitPattern: nzRandom())
-    let r2 = Int8(truncatingBitPattern: nzRandom())
-    let r3 = Int8(truncatingBitPattern: nzRandom())
+  #if swift(>=4.0)
+    let r1 = Int8.nzRandom()
+    let r2 = Int8.nzRandom()
+    let r3 = Int8.nzRandom()
+  #else
+    let r1 = Int8(truncatingBitPattern: UInt.nzRandom())
+    let r2 = Int8(truncatingBitPattern: UInt.nzRandom())
+    let r3 = Int8(truncatingBitPattern: UInt.nzRandom())
+  #endif
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -243,9 +284,15 @@ public class AtomicsTests: XCTestCase
     let i = AtomicUInt8()
     XCTAssert(i.value == 0)
 
-    let r1 = UInt8(truncatingBitPattern: nzRandom())
-    let r2 = UInt8(truncatingBitPattern: nzRandom())
-    let r3 = UInt8(truncatingBitPattern: nzRandom())
+  #if swift(>=4.0)
+    let r1 = UInt8.nzRandom()
+    let r2 = UInt8.nzRandom()
+    let r3 = UInt8.nzRandom()
+  #else
+    let r1 = UInt8(truncatingBitPattern: UInt.nzRandom())
+    let r2 = UInt8(truncatingBitPattern: UInt.nzRandom())
+    let r3 = UInt8(truncatingBitPattern: UInt.nzRandom())
+  #endif
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -304,9 +351,15 @@ public class AtomicsTests: XCTestCase
     let i = AtomicInt16()
     XCTAssert(i.value == 0)
 
-    let r1 = Int16(truncatingBitPattern: nzRandom())
-    let r2 = Int16(truncatingBitPattern: nzRandom())
-    let r3 = Int16(truncatingBitPattern: nzRandom())
+  #if swift(>=4.0)
+    let r1 = Int16.nzRandom()
+    let r2 = Int16.nzRandom()
+    let r3 = Int16.nzRandom()
+  #else
+    let r1 = Int16(truncatingBitPattern: UInt.nzRandom())
+    let r2 = Int16(truncatingBitPattern: UInt.nzRandom())
+    let r3 = Int16(truncatingBitPattern: UInt.nzRandom())
+  #endif
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -365,9 +418,15 @@ public class AtomicsTests: XCTestCase
     let i = AtomicUInt16()
     XCTAssert(i.value == 0)
 
-    let r1 = UInt16(truncatingBitPattern: nzRandom())
-    let r2 = UInt16(truncatingBitPattern: nzRandom())
-    let r3 = UInt16(truncatingBitPattern: nzRandom())
+  #if swift(>=4.0)
+    let r1 = UInt16.nzRandom()
+    let r2 = UInt16.nzRandom()
+    let r3 = UInt16.nzRandom()
+  #else
+    let r1 = UInt16(truncatingBitPattern: UInt.nzRandom())
+    let r2 = UInt16(truncatingBitPattern: UInt.nzRandom())
+    let r3 = UInt16(truncatingBitPattern: UInt.nzRandom())
+  #endif
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -426,9 +485,15 @@ public class AtomicsTests: XCTestCase
     let i = AtomicInt32()
     XCTAssert(i.value == 0)
 
-    let r1 = Int32(truncatingBitPattern: nzRandom())
-    let r2 = Int32(truncatingBitPattern: nzRandom())
-    let r3 = Int32(truncatingBitPattern: nzRandom())
+  #if swift(>=4.0)
+    let r1 = Int32.nzRandom()
+    let r2 = Int32.nzRandom()
+    let r3 = Int32.nzRandom()
+  #else
+    let r1 = Int32(truncatingBitPattern: UInt.nzRandom())
+    let r2 = Int32(truncatingBitPattern: UInt.nzRandom())
+    let r3 = Int32(truncatingBitPattern: UInt.nzRandom())
+  #endif
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -487,9 +552,15 @@ public class AtomicsTests: XCTestCase
     let i = AtomicUInt32()
     XCTAssert(i.value == 0)
 
-    let r1 = UInt32(truncatingBitPattern: nzRandom())
-    let r2 = UInt32(truncatingBitPattern: nzRandom())
-    let r3 = UInt32(truncatingBitPattern: nzRandom())
+  #if swift(>=4.0)
+    let r1 = UInt32.nzRandom()
+    let r2 = UInt32.nzRandom()
+    let r3 = UInt32.nzRandom()
+  #else
+    let r1 = UInt32(truncatingBitPattern: UInt.nzRandom())
+    let r2 = UInt32(truncatingBitPattern: UInt.nzRandom())
+    let r3 = UInt32(truncatingBitPattern: UInt.nzRandom())
+  #endif
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -548,9 +619,15 @@ public class AtomicsTests: XCTestCase
     let i = AtomicInt64()
     XCTAssert(i.value == 0)
 
-    let r1 = Int64(nzRandom())
-    let r2 = Int64(nzRandom())
-    let r3 = Int64(nzRandom())
+  #if swift(>=4.0)
+    let r1 = Int64.nzRandom()
+    let r2 = Int64.nzRandom()
+    let r3 = Int64.nzRandom()
+  #else
+    let r1 = Int64(UInt.nzRandom())
+    let r2 = Int64(UInt.nzRandom())
+    let r3 = Int64(UInt.nzRandom())
+  #endif
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -609,9 +686,15 @@ public class AtomicsTests: XCTestCase
     let i = AtomicUInt64()
     XCTAssert(i.value == 0)
 
-    let r1 = UInt64(nzRandom())
-    let r2 = UInt64(nzRandom())
-    let r3 = UInt64(nzRandom())
+  #if swift(>=4.0)
+    let r1 = UInt64.nzRandom()
+    let r2 = UInt64.nzRandom()
+    let r3 = UInt64.nzRandom()
+  #else
+    let r1 = UInt64(UInt.nzRandom())
+    let r2 = UInt64(UInt.nzRandom())
+    let r3 = UInt64(UInt.nzRandom())
+  #endif
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -670,9 +753,9 @@ public class AtomicsTests: XCTestCase
     let i = AtomicRawPointer()
     XCTAssert(i.pointer == nil)
 
-    let r1 = UnsafeRawPointer(bitPattern: nzRandom())
-    let r2 = UnsafeRawPointer(bitPattern: nzRandom())
-    let r3 = UnsafeRawPointer(bitPattern: nzRandom())
+    let r1 = UnsafeRawPointer(bitPattern: UInt.nzRandom())
+    let r2 = UnsafeRawPointer(bitPattern: UInt.nzRandom())
+    let r3 = UnsafeRawPointer(bitPattern: UInt.nzRandom())
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -699,9 +782,9 @@ public class AtomicsTests: XCTestCase
     let i = AtomicMutableRawPointer()
     XCTAssert(i.pointer == nil)
 
-    let r1 = UnsafeMutableRawPointer(bitPattern: nzRandom())
-    let r2 = UnsafeMutableRawPointer(bitPattern: nzRandom())
-    let r3 = UnsafeMutableRawPointer(bitPattern: nzRandom())
+    let r1 = UnsafeMutableRawPointer(bitPattern: UInt.nzRandom())
+    let r2 = UnsafeMutableRawPointer(bitPattern: UInt.nzRandom())
+    let r3 = UnsafeMutableRawPointer(bitPattern: UInt.nzRandom())
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -728,9 +811,9 @@ public class AtomicsTests: XCTestCase
     let i = AtomicPointer<Int64>()
     XCTAssert(i.pointer == nil)
 
-    let r1 = UnsafePointer<Int64>(bitPattern: nzRandom())
-    let r2 = UnsafePointer<Int64>(bitPattern: nzRandom())
-    let r3 = UnsafePointer<Int64>(bitPattern: nzRandom())
+    let r1 = UnsafePointer<Int64>(bitPattern: UInt.nzRandom())
+    let r2 = UnsafePointer<Int64>(bitPattern: UInt.nzRandom())
+    let r3 = UnsafePointer<Int64>(bitPattern: UInt.nzRandom())
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -757,9 +840,9 @@ public class AtomicsTests: XCTestCase
     let i = AtomicMutablePointer<Int64>()
     XCTAssert(i.pointer == nil)
 
-    let r1 = UnsafeMutablePointer<Int64>(bitPattern: nzRandom())
-    let r2 = UnsafeMutablePointer<Int64>(bitPattern: nzRandom())
-    let r3 = UnsafeMutablePointer<Int64>(bitPattern: nzRandom())
+    let r1 = UnsafeMutablePointer<Int64>(bitPattern: UInt.nzRandom())
+    let r2 = UnsafeMutablePointer<Int64>(bitPattern: UInt.nzRandom())
+    let r3 = UnsafeMutablePointer<Int64>(bitPattern: UInt.nzRandom())
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -786,9 +869,9 @@ public class AtomicsTests: XCTestCase
     let i = AtomicOpaquePointer()
     XCTAssert(i.pointer == nil)
 
-    let r1 = OpaquePointer(bitPattern: nzRandom())
-    let r2 = OpaquePointer(bitPattern: nzRandom())
-    let r3 = OpaquePointer(bitPattern: nzRandom())
+    let r1 = OpaquePointer(bitPattern: UInt.nzRandom())
+    let r2 = OpaquePointer(bitPattern: UInt.nzRandom())
+    let r3 = OpaquePointer(bitPattern: UInt.nzRandom())
 
     i.store(r1)
     XCTAssert(r1 == i.load())
@@ -813,7 +896,7 @@ public class AtomicsTests: XCTestCase
 
   public func testBool()
   {
-    var boolean = AtomicBool(false)
+    let boolean = AtomicBool(false)
     _ = AtomicBool(true)
     XCTAssert(boolean.value == false)
 
@@ -855,6 +938,8 @@ public class AtomicsTests: XCTestCase
       boolean.CAS(current: true, future: false, type: .weak)
       boolean.CAS(current: false, future: true, type: .weak)
     }
+
+    boolean.destroy()
   }
 
   public func testFence()
@@ -866,33 +951,38 @@ public class AtomicsTests: XCTestCase
   private class Thing
   {
     let id: UInt
-    init(_ x: UInt = nzRandom()) { id = x }
+    init(_ x: UInt = UInt.nzRandom()) { id = x }
     deinit { print("Released     \(id)") }
   }
 
   public func testUnmanaged()
   {
-    var i = nzRandom()
-    var a = AtomicReference(Thing(i))
+    var i = UInt.nzRandom()
+    let a = AtomicReference(Thing(i))
     do {
       let r1 = a.swap(.none)
       print("Will release \(i)")
       XCTAssert(r1 != nil)
     }
 
-    i = nzRandom()
+    i = UInt.nzRandom()
     XCTAssert(a.swap(Thing(i)) == nil)
     print("Releasing    \(i)")
     XCTAssert(a.swap(nil) != nil)
 
-    i = nzRandom()
+    i = UInt.nzRandom()
     XCTAssert(a.swapIfNil(Thing(i)) == true)
-    let j = nzRandom()
+    let j = UInt.nzRandom()
     print("Will drop    \(j)")
     XCTAssert(a.swapIfNil(Thing(j)) == false)
 
     print("Will release \(i)")
     XCTAssert(a.take() != nil)
     XCTAssert(a.take() == nil)
+
+    i = UInt.nzRandom()
+    print("will release \(i)")
+    _ = a.swap(Thing(i))
+    a.destroy()
   }
 }
