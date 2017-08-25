@@ -5,22 +5,22 @@
 //  Copyright © 2015, 2016 Guillaume Lessard. All rights reserved.
 //
 
-import ClangAtomics
-% for (AtomicType, PointerType, MemoryBinding) in [('AtomicMutableRawPointer', 'UnsafeMutableRawPointer', ''), ('AtomicRawPointer', 'UnsafeRawPointer', ''), ('AtomicMutablePointer<Pointee>', 'UnsafeMutablePointer<Pointee>', '?.assumingMemoryBound(to: Pointee.self)'), ('AtomicPointer<Pointee>', 'UnsafePointer<Pointee>', '?.assumingMemoryBound(to: Pointee.self)'), ('AtomicOpaquePointer', 'OpaquePointer', '')]:
+import CAtomics
+% for (AtomicType, PointerType, MemoryBinding, Mutable) in [('AtomicMutableRawPointer', 'UnsafeMutableRawPointer', '', 'Mutable'), ('AtomicRawPointer', 'UnsafeRawPointer', '', ''), ('AtomicMutablePointer<Pointee>', 'UnsafeMutablePointer<Pointee>', '?.assumingMemoryBound(to: Pointee.self)', 'Mutable'), ('AtomicPointer<Pointee>', 'UnsafePointer<Pointee>', '?.assumingMemoryBound(to: Pointee.self)', ''), ('AtomicOpaquePointer', 'OpaquePointer', '', '')]:
 
 public struct ${AtomicType}
 {
-  @_versioned let p = UnsafeMutablePointer<AtomicVoidPointer>.allocate(capacity: 1)
+  @_versioned let p = UnsafeMutablePointer<CAtomics${Mutable}Pointer>.allocate(capacity: 1)
 
   public init(_ pointer: ${PointerType}? = nil)
   {
-    AtomicPointerInit(UnsafeRawPointer(pointer), p)
+    CAtomics${Mutable}PointerInit(Unsafe${Mutable}RawPointer(pointer), p)
   }
 
   public var pointer: ${PointerType}? {
     @inline(__always)
     get {
-      return ${PointerType}(AtomicPointerLoad(p, .relaxed)${MemoryBinding})
+      return ${PointerType}(CAtomics${Mutable}PointerLoad(p, .relaxed)${MemoryBinding})
     }
   }
 
@@ -32,43 +32,43 @@ public struct ${AtomicType}
   @inline(__always)
   public func load(order: LoadMemoryOrder = .sequential) -> ${PointerType}?
   {
-    return ${PointerType}(AtomicPointerLoad(p, order)${MemoryBinding})
+    return ${PointerType}(CAtomics${Mutable}PointerLoad(p, order)${MemoryBinding})
   }
 
   @inline(__always)
   public func store(_ pointer: ${PointerType}?, order: StoreMemoryOrder = .sequential)
   {
-    AtomicPointerStore(UnsafeRawPointer(pointer), p, order)
+    CAtomics${Mutable}PointerStore(Unsafe${Mutable}RawPointer(pointer), p, order)
   }
 
   @inline(__always)
   public func swap(_ pointer: ${PointerType}?, order: MemoryOrder = .sequential) -> ${PointerType}?
   {
-    return ${PointerType}(AtomicPointerSwap(UnsafeRawPointer(pointer), p, order)${MemoryBinding})
+    return ${PointerType}(CAtomics${Mutable}PointerSwap(Unsafe${Mutable}RawPointer(pointer), p, order)${MemoryBinding})
   }
 
   @inline(__always) @discardableResult
   public func loadCAS(current: UnsafeMutablePointer<${PointerType}?>,
-                               future: ${PointerType}?,
-                               type: CASType = .weak,
-                               orderSwap: MemoryOrder = .sequential,
-                               orderLoad: LoadMemoryOrder = .sequential) -> Bool
+                      future: ${PointerType}?,
+                      type: CASType = .weak,
+                      orderSwap: MemoryOrder = .sequential,
+                      orderLoad: LoadMemoryOrder = .sequential) -> Bool
   {
-    return current.withMemoryRebound(to: Optional<UnsafeRawPointer>.self, capacity: 1) {
+    return current.withMemoryRebound(to: Optional<Unsafe${Mutable}RawPointer>.self, capacity: 1) {
       current in
       switch type {
       case .strong:
-        return AtomicPointerStrongCAS(current, UnsafeRawPointer(future), p, orderSwap, orderLoad)
+        return CAtomics${Mutable}PointerStrongCAS(current, Unsafe${Mutable}RawPointer(future), p, orderSwap, orderLoad)
       case .weak:
-        return AtomicPointerWeakCAS(current, UnsafeRawPointer(future), p, orderSwap, orderLoad)
+        return CAtomics${Mutable}PointerWeakCAS(current, Unsafe${Mutable}RawPointer(future), p, orderSwap, orderLoad)
       }
     }
   }
 
   @inline(__always) @discardableResult
   public func CAS(current: ${PointerType}?, future: ${PointerType}?,
-                           type: CASType = .weak,
-                           order: MemoryOrder = .sequential) -> Bool
+                  type: CASType = .weak,
+                  order: MemoryOrder = .sequential) -> Bool
   {
     var expect = current
     return loadCAS(current: &expect, future: future, type: type, orderSwap: order, orderLoad: .relaxed)

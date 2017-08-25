@@ -1,35 +1,35 @@
 //
-//  RacetestsDispatch.swift
+//  CAtomicsRaceTests.swift
 //  AtomicsTests
 //
 
 import XCTest
 import Dispatch
 
-import Atomics
+import CAtomics
 
 private let iterations = 200_000//_000
 
 private struct Point { var x = 0.0, y = 0.0, z = 0.0 }
 
-public class AtomicsRaceTests: XCTestCase
+public class CAtomicsRaceTests: XCTestCase
 {
-  public static var raceTests = [
+  public static var allTests = [
     ("testRaceCrash", testRaceCrash),
     ("testRaceSpinLock", testRaceSpinLock),
     ("testRacePointerCAS", testRacePointerCAS),
-    ("testRacePointerLoadCAS", testRacePointerLoadCAS),
     ("testRacePointerSwap", testRacePointerSwap),
   ]
 
   public func testRaceCrash()
-  { // this version is guaranteed to crash with a double-free
+  {
+#if false
+    // this version is guaranteed to crash with a double-free
     let q = DispatchQueue(label: "", attributes: .concurrent)
-
-  #if false
     for _ in 1...iterations
     {
       var p: Optional = UnsafeMutablePointer<Point>.allocate(capacity: 1)
+
       let closure = {
         while true
         {
@@ -47,13 +47,11 @@ public class AtomicsRaceTests: XCTestCase
 
       q.async(execute: closure)
       q.async(execute: closure)
-      q.async(flags: .barrier) {}
     }
-  #else
-    print("double-free crash disabled")
-  #endif
-
     q.sync(flags: .barrier) {}
+#else
+    print("double-free crash disabled")
+#endif
   }
 
   public func testRaceSpinLock()
@@ -63,13 +61,16 @@ public class AtomicsRaceTests: XCTestCase
     for _ in 1...iterations
     {
       var p: Optional = UnsafeMutablePointer<Point>.allocate(capacity: 1)
-      let lock = AtomicInt(0)
+      var lock = CAtomicsInt()
+      CAtomicsIntInit(0, &lock)
+
       let closure = {
         while true
         {
-          if lock.CAS(current: 0, future: 1, type: .weak, order: .acquire)
+          var current = 0
+          if CAtomicsIntWeakCAS(&current, 1, &lock, .sequential, .relaxed)
           {
-            defer { lock.store(0, order: .release) }
+            defer { CAtomicsIntStore(0, &lock, .sequential) }
             if let c = p
             {
               p = nil
@@ -85,7 +86,6 @@ public class AtomicsRaceTests: XCTestCase
 
       q.async(execute: closure)
       q.async(execute: closure)
-      q.async(flags: .barrier) { lock.destroy() }
     }
 
     q.sync(flags: .barrier) {}
@@ -97,19 +97,24 @@ public class AtomicsRaceTests: XCTestCase
 
     for _ in 1...iterations
     {
-      let p = AtomicMutablePointer(UnsafeMutablePointer<Point>.allocate(capacity: 1))
+      var p = CAtomicsPointer()
+      CAtomicsPointerInit(UnsafeMutablePointer<Point>.allocate(capacity: 1), &p)
+
       let closure = {
+        var c = UnsafeRawPointer(bitPattern: 0x1)
         while true
         {
-          if let c = p.load(order: .acquire)
+          if CAtomicsPointerWeakCAS(&c, nil, &p, .release, .relaxed)
           {
-            if p.CAS(current: c, future: nil, type: .weak, order: .release)
+            if let c = UnsafeMutableRawPointer(mutating: c)
             {
-              c.deallocate(capacity: 1)
+              let pointer = c.assumingMemoryBound(to: Point.self)
+              pointer.deallocate(capacity: 1)
             }
           }
-          else // pointer is deallocated
-          {
+
+          if c == nil
+          { // pointer is deallocated
             break
           }
         }
@@ -117,38 +122,6 @@ public class AtomicsRaceTests: XCTestCase
 
       q.async(execute: closure)
       q.async(execute: closure)
-      q.async(flags: .barrier) { p.destroy() }
-    }
-
-    q.sync(flags: .barrier) {}
-  }
-
-  public func testRacePointerLoadCAS()
-  {
-    let q = DispatchQueue(label: "", attributes: .concurrent)
-
-    for _ in 1...iterations
-    {
-      let p = AtomicMutablePointer(UnsafeMutablePointer<Point>.allocate(capacity: 1))
-      let closure = {
-        var c = p.pointer
-        while true
-        {
-          if p.loadCAS(current: &c, future: nil, type: .weak, orderSwap: .release, orderLoad: .relaxed),
-             let c = c
-          {
-            c.deallocate(capacity: 1)
-          }
-          else // pointer is deallocated
-          {
-            break
-          }
-        }
-      }
-
-      q.async(execute: closure)
-      q.async(execute: closure)
-      q.async(flags: .barrier) { p.destroy() }
     }
 
     q.sync(flags: .barrier) {}
@@ -160,13 +133,16 @@ public class AtomicsRaceTests: XCTestCase
 
     for _ in 1...iterations
     {
-      let p = AtomicMutablePointer(UnsafeMutablePointer<Point>.allocate(capacity: 1))
+      var p = CAtomicsPointer()
+      CAtomicsPointerInit(UnsafeMutablePointer<Point>.allocate(capacity: 1), &p)
+
       let closure = {
         while true
         {
-          if let c = p.swap(nil, order: .acquire)
+          if let c = CAtomicsPointerSwap(nil, &p, .acquire)
           {
-            c.deallocate(capacity: 1)
+            let pointer = UnsafeMutableRawPointer(mutating: c).assumingMemoryBound(to: Point.self)
+            pointer.deallocate(capacity: 1)
           }
           else // pointer is deallocated
           {
@@ -177,9 +153,9 @@ public class AtomicsRaceTests: XCTestCase
 
       q.async(execute: closure)
       q.async(execute: closure)
-      q.async(flags: .barrier) { p.destroy() }
     }
 
     q.sync(flags: .barrier) {}
   }
 }
+

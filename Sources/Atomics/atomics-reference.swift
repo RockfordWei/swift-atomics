@@ -6,21 +6,21 @@
 //  Copyright © 2017 Guillaume Lessard. All rights reserved.
 //
 
-import ClangAtomics
+import CAtomics
 
 public struct AtomicReference<T: AnyObject>
 {
-  @_versioned internal let p = UnsafeMutablePointer<AtomicVoidPointer>.allocate(capacity: 1)
+  @_versioned internal let p = UnsafeMutablePointer<CAtomicsPointer>.allocate(capacity: 1)
 
   public init(_ ref: T? = nil)
   {
     let u = Unmanaged.tryRetain(ref)?.toOpaque()
-    AtomicPointerInit(u, p)
+    CAtomicsPointerInit(u, p)
   }
 
   public func destroy()
   {
-    if let pointer = AtomicPointerLoad(p, .relaxed)
+    if let pointer = CAtomicsPointerLoad(p, .relaxed)
     {
       _ = Unmanaged<T>.fromOpaque(pointer).takeRetainedValue()
     }
@@ -34,7 +34,7 @@ extension AtomicReference
   public func swap(_ ref: T?, order: MemoryOrder = .sequential) -> T?
   {
     let u = Unmanaged.tryRetain(ref)?.toOpaque()
-    if let pointer = AtomicPointerSwap(u, p, order)
+    if let pointer = CAtomicsPointerSwap(u, p, order)
     {
       return Unmanaged<T>.fromOpaque(pointer).takeRetainedValue()
     }
@@ -46,7 +46,7 @@ extension AtomicReference
   {
     let u = Unmanaged.passUnretained(ref)
     var null: UnsafeRawPointer? = nil
-    if AtomicPointerStrongCAS(&null, u.toOpaque(), p, order, .relaxed)
+    if CAtomicsPointerStrongCAS(&null, u.toOpaque(), p, order, .relaxed)
     {
       _ = u.retain()
       return true
@@ -57,7 +57,7 @@ extension AtomicReference
   @inline(__always)
   public func take(order: MemoryOrder = .sequential) -> T?
   {
-    if let pointer = AtomicPointerSwap(nil, p, order)
+    if let pointer = CAtomicsPointerSwap(nil, p, order)
     {
       return Unmanaged<T>.fromOpaque(pointer).takeRetainedValue()
     }
