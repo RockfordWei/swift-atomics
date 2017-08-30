@@ -96,12 +96,7 @@ extension AtomicInt
                       orderSwap: MemoryOrder = .relaxed,
                       orderLoad: LoadMemoryOrder = .relaxed) -> Bool
   {
-    switch type {
-    case .strong:
-      return CAtomicsIntStrongCAS(current, future, p, orderSwap, orderLoad)
-    case .weak:
-      return CAtomicsIntWeakCAS(current, future, p, orderSwap, orderLoad)
-    }
+    return CAtomicsIntCAS(current, future, p, type, orderSwap, orderLoad)
   }
 
   @inline(__always) @discardableResult
@@ -202,12 +197,7 @@ extension AtomicUInt
                       orderSwap: MemoryOrder = .relaxed,
                       orderLoad: LoadMemoryOrder = .relaxed) -> Bool
   {
-    switch type {
-    case .strong:
-      return CAtomicsUIntStrongCAS(current, future, p, orderSwap, orderLoad)
-    case .weak:
-      return CAtomicsUIntWeakCAS(current, future, p, orderSwap, orderLoad)
-    }
+    return CAtomicsUIntCAS(current, future, p, type, orderSwap, orderLoad)
   }
 
   @inline(__always) @discardableResult
@@ -308,12 +298,7 @@ extension AtomicInt8
                       orderSwap: MemoryOrder = .relaxed,
                       orderLoad: LoadMemoryOrder = .relaxed) -> Bool
   {
-    switch type {
-    case .strong:
-      return CAtomicsInt8StrongCAS(current, future, p, orderSwap, orderLoad)
-    case .weak:
-      return CAtomicsInt8WeakCAS(current, future, p, orderSwap, orderLoad)
-    }
+    return CAtomicsInt8CAS(current, future, p, type, orderSwap, orderLoad)
   }
 
   @inline(__always) @discardableResult
@@ -414,12 +399,7 @@ extension AtomicUInt8
                       orderSwap: MemoryOrder = .relaxed,
                       orderLoad: LoadMemoryOrder = .relaxed) -> Bool
   {
-    switch type {
-    case .strong:
-      return CAtomicsUInt8StrongCAS(current, future, p, orderSwap, orderLoad)
-    case .weak:
-      return CAtomicsUInt8WeakCAS(current, future, p, orderSwap, orderLoad)
-    }
+    return CAtomicsUInt8CAS(current, future, p, type, orderSwap, orderLoad)
   }
 
   @inline(__always) @discardableResult
@@ -520,12 +500,7 @@ extension AtomicInt16
                       orderSwap: MemoryOrder = .relaxed,
                       orderLoad: LoadMemoryOrder = .relaxed) -> Bool
   {
-    switch type {
-    case .strong:
-      return CAtomicsInt16StrongCAS(current, future, p, orderSwap, orderLoad)
-    case .weak:
-      return CAtomicsInt16WeakCAS(current, future, p, orderSwap, orderLoad)
-    }
+    return CAtomicsInt16CAS(current, future, p, type, orderSwap, orderLoad)
   }
 
   @inline(__always) @discardableResult
@@ -626,12 +601,7 @@ extension AtomicUInt16
                       orderSwap: MemoryOrder = .relaxed,
                       orderLoad: LoadMemoryOrder = .relaxed) -> Bool
   {
-    switch type {
-    case .strong:
-      return CAtomicsUInt16StrongCAS(current, future, p, orderSwap, orderLoad)
-    case .weak:
-      return CAtomicsUInt16WeakCAS(current, future, p, orderSwap, orderLoad)
-    }
+    return CAtomicsUInt16CAS(current, future, p, type, orderSwap, orderLoad)
   }
 
   @inline(__always) @discardableResult
@@ -732,12 +702,7 @@ extension AtomicInt32
                       orderSwap: MemoryOrder = .relaxed,
                       orderLoad: LoadMemoryOrder = .relaxed) -> Bool
   {
-    switch type {
-    case .strong:
-      return CAtomicsInt32StrongCAS(current, future, p, orderSwap, orderLoad)
-    case .weak:
-      return CAtomicsInt32WeakCAS(current, future, p, orderSwap, orderLoad)
-    }
+    return CAtomicsInt32CAS(current, future, p, type, orderSwap, orderLoad)
   }
 
   @inline(__always) @discardableResult
@@ -838,12 +803,7 @@ extension AtomicUInt32
                       orderSwap: MemoryOrder = .relaxed,
                       orderLoad: LoadMemoryOrder = .relaxed) -> Bool
   {
-    switch type {
-    case .strong:
-      return CAtomicsUInt32StrongCAS(current, future, p, orderSwap, orderLoad)
-    case .weak:
-      return CAtomicsUInt32WeakCAS(current, future, p, orderSwap, orderLoad)
-    }
+    return CAtomicsUInt32CAS(current, future, p, type, orderSwap, orderLoad)
   }
 
   @inline(__always) @discardableResult
@@ -944,12 +904,7 @@ extension AtomicInt64
                       orderSwap: MemoryOrder = .relaxed,
                       orderLoad: LoadMemoryOrder = .relaxed) -> Bool
   {
-    switch type {
-    case .strong:
-      return CAtomicsInt64StrongCAS(current, future, p, orderSwap, orderLoad)
-    case .weak:
-      return CAtomicsInt64WeakCAS(current, future, p, orderSwap, orderLoad)
-    }
+    return CAtomicsInt64CAS(current, future, p, type, orderSwap, orderLoad)
   }
 
   @inline(__always) @discardableResult
@@ -1050,12 +1005,7 @@ extension AtomicUInt64
                       orderSwap: MemoryOrder = .relaxed,
                       orderLoad: LoadMemoryOrder = .relaxed) -> Bool
   {
-    switch type {
-    case .strong:
-      return CAtomicsUInt64StrongCAS(current, future, p, orderSwap, orderLoad)
-    case .weak:
-      return CAtomicsUInt64WeakCAS(current, future, p, orderSwap, orderLoad)
-    }
+    return CAtomicsUInt64CAS(current, future, p, type, orderSwap, orderLoad)
   }
 
   @inline(__always) @discardableResult
